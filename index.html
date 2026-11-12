@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le mie cose da fare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #122a23;
+      --card: #fffdf8;
+      --ink: #16261f;
+      --muted: #6e7f76;
+      --line: #e7e4da;
+      --accent: #ff6b4a;
+      --accent-soft: #ffe6de;
+      --done: #22a06b;
+    }
+
+    body {
+      font-family: 'Instrument Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    /* Bagliori decorativi sullo sfondo */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(600px 400px at 18% 12%, rgba(255,183,77,.16), transparent 60%),
+        radial-gradient(520px 420px at 85% 88%, rgba(94,234,212,.13), transparent 60%);
+      pointer-events: none;
+    }
+
+    .app { width: 100%; max-width: 460px; position: relative; }
+
+    .card {
+      background: var(--card);
+      border-radius: 22px;
+      padding: 30px 28px 26px;
+      border-top: 6px solid var(--accent);
+      box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    }
+
+    .greeting {
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 7vw, 2.7rem);
+      line-height: 1.02;
+      letter-spacing: -.02em;
+      margin-top: 6px;
+    }
+
+    .date { color: var(--muted); margin-top: 8px; font-size: .95rem; }
+
+    .progress { display: flex; align-items: center; gap: 12px; margin: 22px 0 18px; }
+    .progress-track { flex: 1; height: 10px; background: #ecebe1; border-radius: 99px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), #ffb74d);
+      transition: width .5s cubic-bezier(.3,.8,.3,1);
+    }
+    .progress-pct {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 800;
+      font-size: .95rem;
+      min-width: 46px;
+      text-align: right;
+    }
+
+    form { display: flex; gap: 10px; }
+
+    input {
+      flex: 1;
+      padding: 14px 16px;
+      font: inherit;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+    form button {
+      width: 50px; height: 50px;
+      border: none; border-radius: 14px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.7rem; line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 16px rgba(255,107,74,.35);
+      transition: transform .15s, background .2s;
+    }
+    form button:hover { background: #f2542f; transform: translateY(-2px); }
+    form button:active { transform: translateY(0) scale(.95); }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 20px 0 12px; }
+
+    .filters { display: flex; gap: 4px; background: #f1efe6; padding: 4px; border-radius: 99px; }
+    .filter-btn {
+      border: none; background: transparent;
+      padding: 7px 14px; border-radius: 99px;
+      font: inherit; font-size: .88rem; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+      transition: .2s;
+    }
+    .filter-btn:hover { color: var(--ink); }
+    .filter-btn.active { background: var(--ink); color: #fff; }
+
+    .clear {
+      border: none; background: none;
+      font: inherit; font-size: .85rem;
+      color: var(--muted); cursor: pointer;
+      text-decoration: underline; text-underline-offset: 3px;
+      display: none;
+    }
+    .clear:hover { color: var(--accent); }
+
+    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+    .task {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 14px;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .task:hover { border-color: #d8d4c6; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+
+    .check {
+      flex: 0 0 auto;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      background: #fff; color: transparent;
+      cursor: pointer; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: .2s;
+    }
+    .check svg { width: 14px; height: 14px; }
+    .check:hover { border-color: var(--done); }
+    .task.done .check { background: var(--done); border-color: var(--done); color: #fff; }
+
+    .txt { flex: 1; font-size: .98rem; transition: color .2s; overflow-wrap: anywhere; }
+    .task.done .txt { color: var(--muted); text-decoration: line-through; text-decoration-color: #c9c5b8; }
+
+    .del {
+      border: none; background: none;
+      color: #c6c2b5; font-size: 1.5rem; line-height: 1;
+      cursor: pointer; padding: 2px 6px;
+      opacity: 0;
+      transition: opacity .2s, color .2s, transform .15s;
+    }
+    .task:hover .del, .del:focus-visible { opacity: 1; }
+    .del:hover { color: #e5484d; transform: scale(1.15); }
+    @media (hover: none) { .del { opacity: 1; } } /* su mobile sempre visibile */
+
+    .task.enter { animation: pop-in .35s cubic-bezier(.2,.9,.3,1.15); }
+    @keyframes pop-in {
+      from { opacity: 0; transform: translateY(-10px) scale(.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .task.leaving { opacity: 0; transform: translateX(24px); transition: .22s ease; pointer-events: none; }
+
+    .empty {
+      text-align: center; color: var(--muted);
+      padding: 26px 10px; margin-top: 4px;
+      border: 1.5px dashed var(--line); border-radius: 14px;
+    }
+
+    .count { margin-top: 16px; text-align: center; font-size: .85rem; color: var(--muted); }
+    .hint { text-align: center; color: rgba(255,255,255,.45); font-size: .8rem; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="card">
+      <header>
+        <p class="greeting" id="greeting">Ciao!</p>
+        <h1>Le mie cose<br>da fare</h1>
+        <p class="date" id="date"></p>
+      </header>
+
+      <div class="progress">
+        <div class="progress-track"><div class="progress-fill" id="bar-fill"></div></div>
+        <span class="progress-pct" id="bar-pct">0%</span>
+      </div>
+
+      <form id="task-form" autocomplete="off">
+        <input id="task-input" type="text" placeholder="Cosa devi fare oggi?" maxlength="120" aria-label="Nuova attività">
+        <button type="submit" aria-label="Aggiungi attività">+</button>
+      </form>
+
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">Tutti</button>
+          <button class="filter-btn" data-filter="active">Da fare</button>
+          <button class="filter-btn" data-filter="done">Fatti</button>
+        </div>
+        <button id="clear-done" class="clear">Pulisci fatti</button>
+      </div>
+
+      <ul id="list" class="list"></ul>
+      <p id="empty" class="empty">Nessuna attività qui. Aggiungi la prima! ✨</p>
+
+      <p class="count" id="count"></p>
+    </div>
+    <p class="hint">I tuoi dati restano salvati su questo dispositivo.</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'le-mie-cose-da-fare';
+    let todos = [];
+    let filter = 'all';
+
+    // Carica i dati salvati in precedenza
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) todos = JSON.parse(saved);
+    } catch (e) { /* se qualcosa va storto, si parte da zero */ }
+
+    const listEl    = document.getElementById('list');
+    const inputEl   = document.getElementById('task-input');
+    const formEl    = document.getElementById('task-form');
+    const barEl     = document.getElementById('bar-fill');
+    const pctEl     = document.getElementById('bar-pct');
+    const countEl   = document.getElementById('count');
+    const emptyEl   = document.getElementById('empty');
+    const clearBtn  = document.getElementById('clear-done');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+
+    // Saluto e data in italiano
+    (function setHeader() {
+      const h = new Date().getHours();
+      const g = h < 12 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera';
+      document.getElementById('greeting').textContent = g + '!';
+      const d = new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+      document.getElementById('date').textContent = d.charAt(0).toUpperCase() + d.slice(1);
+    })();
+
+    function makeTaskEl(todo, isNew) {
+      const li = document.createElement('li');
+      li.className = 'task' + (todo.done ? ' done' : '') + (isNew ? ' enter' : '');
+      li.dataset.id = todo.id;
+
+      const check = document.createElement('button');
+      check.className = 'check';
+      check.setAttribute('aria-label', 'Segna come completato');
+      check.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+      const txt = document.createElement('span');
+      txt.className = 'txt';
+      txt.textContent = todo.text;
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.setAttribute('aria-label', 'Elimina attività');
+      del.innerHTML = '&times;';
+
+      li.append(check, txt, del);
+      return li;
+    }
+
+    function render(newId = null) {
+      listEl.innerHTML = '';
+      let visible = todos;
+      if (filter === 'active') visible = todos.filter(t => !t.done);
+      if (filter === 'done')   visible = todos.filter(t => t.done);
+
+      visible.forEach(t => listEl.appendChild(makeTaskEl(t, t.id === newId)));
+
+      const doneCount = todos.filter(t => t.done).length;
+      const pct = todos.length ? Math.round(doneCount / todos.length * 100) : 0;
+      barEl.style.width = pct + '%';
+      pctEl.textContent = pct + '%';
+      countEl.textContent = todos.length === 0
+        ? 'Nessuna attività'
+        : `${todos.length - doneCount} da fare · ${doneCount} completate`;
+
+      emptyEl.style.display = visible.length ? 'none' : 'block';
+      clearBtn.style.display = doneCount ? 'inline' : 'none';
+    }
+
+    // Aggiunta
+    formEl.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = inputEl.value.trim();
+      if (!text) return;
+      const id = Date.now();
+      todos.unshift({ id, text, done: false });
+      inputEl.value = '';
+      inputEl.focus();
+      save();
+      render(id);
+    });
+
+    // Completamento / eliminazione
+    listEl.addEventListener('click', e => {
+      const li = e.target.closest('.task');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+
+      if (e.target.closest('.del')) {
+        li.classList.add('leaving');
+        setTimeout(() => {
+          todos = todos.filter(t => t.id !== id);
+          save();
+          render();
+        }, 220);
+        return;
+      }
+      if (e.target.closest('.check')) {
+        const t = todos.find(t => t.id === id);
+        if (t) t.done = !t.done;
+        save();
+        setTimeout(render, 180); // lascia il tempo di vedere l'animazione ✓
+      }
+    });
+
+    // Filtri
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filter = btn.dataset.filter;
+        render();
+      });
+    });
+
+    // Pulizia completati
+    clearBtn.addEventListener('click', () => {
+      todos = todos.filter(t => !t.done);
+      save();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
